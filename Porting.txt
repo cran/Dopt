@@ -1,0 +1,46 @@
+D-Opt porting:
+
+Some problems under the port: 
+
+1) gcc claims that some variables are used in different
+  places with different precision, specifically, argument
+  3 and 5 to subroutine INV are declared in the routine
+  as REAL but called as double precision.  This didn't 
+  seem to cause problems (?). I corrected this.
+
+2) Still, after that change, I get sometimes a General
+  Protection Fault, when using blocks. That seems to
+  depend on size&number of block: When using 7 blocks
+  of size 3 each, everything works right, but 2 blocks of
+  size 12 cause GPF.
+
+  More details: 
+
+  l <- c("-","+")
+  fac <- expand.grid(l,l,l,l,l,l,l,l,l,l,l)
+  names(fac) <- LETTERS[-6][1:11]      # omit F as factor name
+
+  dsn <- Dopt(~ A+B+C+D+E+G+H+I+J+K+L, 12, fac, initial=1, fixed=T) 
+==>  OK
+  dsn <- Dopt(~ A+B+C+D+E+G+H+I+J+K+L, 24, fac, initial=1, fixed=T) 
+==>  OK
+  dsn <- Dopt(~ A+B+C+D+E+G+H+I+J+K+L, c(rep(1,7), rep(2,7)), fac,
+initial=1, fixed=T)  ==>  GPF (R terminates)
+  dsn <- Dopt(~ A+B+C+D+E+G+H+I+J+K+L, c(rep(1,8), rep(2,8)), fac,
+initial=1, fixed=T)  ==>  GPF 
+  dsn <- Dopt(~ A+B+C+D+E+G+H+I+J+K+L, rep(1:8, rep(3,8)), fac,
+initial=1, fixed=T)     ==>  OK
+  dsn <- Dopt(~ A+B+C+D+E+G+H+I+J+K+L, rep(1:3,rep(6,3)), fac,
+initial=1, fixed=T)      ==>  OK
+
+
+3) I cannot get the formula handling for blocks to work, 
+   but simply disabling it and using vectors for
+   designing blocks is OK. Do I really loose
+   something in this?
+
+
+
+
+Kjetil Halvorsen.
+

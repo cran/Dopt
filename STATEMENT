@@ -1,0 +1,32 @@
+Redistribution:
+
+Permission is given to re-distribute this software freely for any
+non-commercial purpose.
+
+The S front end was was written by Bill Venables, who retains the
+copyright.
+
+The Fortran program was written by Alan Miller and Nam-Ky Nguyen,
+who have both given their acquiescence and support to the free
+distribution of this material, however the copyright for the
+fortran program itself is held by the Royal Statistical Society.
+Any use of this software in commercial products must be done with
+the permission of the Royal Statistical Society.  A contact
+address is given at the top of the fortran file.  The Fortran
+file is also available on statlib, with the permission of the
+Royal Statistical Society.
+
+Support:
+
+I would be very pleased to hear of any improvements, suggestions
+or bugs in this software.  Anyone is free to contact me at the
+email address given below, but I cannot undertake to provide a
+support service.
+
+Disclaimer:
+
+No warranty is given on the results of this software.  No claims
+are made for its exactness or suitability for any purpose.
+
+Bill Venables  (Bill.Venables@Adelaide.edu.au)
+21 April, 1995

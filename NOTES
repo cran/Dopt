@@ -1,0 +1,195 @@
+Extract from notes supplied by the authors of the original fortran program.
+
+
+[NOTE: The fortran function DOPT has been renamed FEDROV in the version for
+       use in dynamic loading in S-PLUS to avoid name conflicts.
+       W. Venables.]
+
+				  D O P T
+				  _______
+				     
+		      by Alan Miller & Nam-Ky Nguyen
+
+DOPT is an algorithm for generating experimental designs which are close to
+being D-optimal designs, using Fedorov's exchange algorithm.  The algorithm
+allows for blocking of designs in blocks which may vary in size.  It is
+particularly suitable for producing fractional factorial designs when some
+of the factors have more than two levels.  Such cases usually require a
+large number of experimental runs and it is rarely possible to complete
+them all in one batch, and hence the design often needs to be blocked.
+Where there is more than one block, an algorithm due to Cook & Nachtsheim
+is used to swap design points between blocks to attempt to increase the
+determinant.
+
+
+Use of DOPT
+___________
+
+To use DOPT in any other program, the user must supply a 2-D array, X, of
+candidate points from which DOPT will select n points, possibly with
+duplication.  The candidate points could be read in from a file, or
+generated in the program.  See the programs DRIVER, IBQUAD and DYKSTRA for
+examples.
+
+The optimum design depends upon the model to be fitted.  DOPT attempts to
+maximize the determinant of X'X for the selected design points.  Here X
+consists of only those rows corresponding to the selected points.  If say a
+quadratic surface:
+                                     2             2
+           z  =  a  + a x + a y + a x  + a xy + a y
+                  0    1     2     3      4      5
+
+is to be fitted, then the input (or generated) matrix X of candidate points
+might be:
+                        2         2
+            (x)  (y)  (x ) (xy) (y )
+
+             -1   -1   +1   +1   +1
+             -1    0   +1    0    0
+             -1   +1   +1   -1   +1
+              0   -1    0    0   +1
+              0    0    0    0    0
+              0   +1    0    0   +1
+             +1   -1   +1   -1   +1
+             +1    0   +1    0    0
+             +1   +1   +1   +1   +1
+
+If you want to fit a cubic term in x then an extra column for the cube of x
+can be added at the right-hand side (or anywhere else!), but at least four
+different values of x would be needed for a cubic.
+
+In simple designs, such as for fitting quadratic curves, or for estimating
+effects of factors which have only two levels, values such as -1, 0 and +1
+can be used for X and then translated into say low, medium and high actual
+values for the real life variables.
+
+The arguments for DOPT are as follows:
+
+X(DIM1, NCAND)  Real, input         Array of candidate points from which
+                                    the design points will be chosen.
+
+DIM1            Integer, input      1st dimension of X in the calling program.
+
+NCAND           Integer, input      Number of candidate points.
+
+KIN             Integer, input      The number of columns of the design matrix.
+
+N               Integer, input      The number of points required in the design.
+
+NBLOCK          Integer, input      The number of blocks in the design.  If no
+                                    constant is to be fitted in the model, set
+                                    NBLOCK = 0.
+
+IN(NBL)         Integer, input      The number of points, if any, to be forced
+                                    into each block.   N.B. If NBLOCK = 0, the
+** NBL = max(NBLOCK, 1) **          value of IN(1) must be set.
+
+BLKSIZ(NBL)     Integer, input      The number of design points in each block.
+
+K               Integer, input      KIN + the number of blocks.
+
+RSTART          Logical, input      = .TRUE. for DOPT to generate a random
+                                      starting design,
+                                    = .FALSE. if a starting design is being
+                                      input in array PICKED (see below).   This
+                                      option would be used if you want to see if
+                                      any improvement can be made to an existing
+                                      design.
+
+NRBAR           Integer, input      The dimension of RBAR.  Must be at least
+                                    K(K-1)/2.
+
+D(K)            D.prec., output     Array of row multipliers for the Cholesky
+                                    factorization of the final X'X matrix.
+
+RBAR(NRBAR)     D.prec., output     Array containing the upper triangle of the
+                                    Cholesky factor stored by rows, excluding
+                                    the diagonal elements which are all 1's.
+
+PICKED(N)       Integer, I/O        1. INPUT.   PICKED(I) contains the position
+                                       of the I-th design point in the input
+                                       array of candidate points, X.   Used
+                                       when one or more values of IN(I) is > 0
+                                       or when RSTART = .FALSE.
+                                    2. OUTPUT.  PICKED(I) contains the positions
+                                       of the selected design points in the input
+                                       array of candidate points, X.
+
+LNDET           D.prec., output     Logarithm of the determinant of X'X.
+
+XX(K)           D.prec., workspace
+
+TOL(K)          D.prec., output     Array of tolerances used for testing for
+                                    singularities.
+
+ZPZ(NCAND,NBL)  D.prec., workspace
+
+WK(K)           D.prec., workspace
+
+IFAULT          Integer, output     Error indicator
+                                    = 0 if no errors detected
+                                    = -1 if no full-rank starting design is
+                                         found.   Check your design specification
+                                         if this error is reported.
+                                    = 1  if DIM1 < NCAND
+                                    = 2  if K < N
+                                    = 4  if NRBAR < K(K-1)/2
+                                    = 8  if K not equal to KIN + NBLOCK
+                                    = 16 if sum of block sizes in array BLKSIZ
+                                         is not equal to N
+                                    = 32 if any IN(I) < 0 or IN(I) > BLKSIZ(I)
+
+N.B. If more than one error is detected with a positive error indicator, then
+the values above are summed.   If a non-zero value for IFAULT is returned, it
+could be caused by calling DOPT with the wrong number or types of arguments.
+
+
+
+A note on memory requirements
+_____________________________
+
+The array X can be very large.  e.g. for a (2^8) x (3^3) factorial, there
+are 256 x 27 = 6912 candidate points, and the second dimension of this
+array needs to be at least 58 to fit all 2-factor interactions and a
+quadratic surface.  If 4 bytes are required for each REAL value stored, the
+minimum memory requirement for this array is 6912 x 58 x 4 = 1603584 bytes,
+or just over 1.5Mbytes.
+
+This space requirement can be reduced in three ways:
+1. X can be declared as an INTEGER*2 or INTEGER*1 array if the compiler
+   allows it.  If so, the declaration for X must be changed in routines
+   DOPT and GETX.  This is of course only appropriate when X takes integer
+   values.
+
+2. Subroutine GETX is used to supply a requested candidate point to DOPT in
+   vector XX.  In the case above, the 2nd dimension of X could be reduced
+   to 11 if routine GETX is re-written to calculate the interaction and
+   quadratic terms.  Notice that GETX puts 0 and 1 values into the first
+   NBL positions of XX to indicate which block a design point is in.
+
+3. The use of array X can be eliminated, and its elements can be generated
+   in GETX as required.
+
+Option 2 will slow down execution, and option 3 will make it very much slower.
+
+------------------------------------------------------------------------------
+
+For a reference on the methods used, prior to the publication in Applied
+Statistics, see:
+
+Nguyen, N-K. and Miller, A.J. (1992).  A review of some exchange algorithms
+for constructing discrete D-optimal designs.   Comput. Statist. & Data Anal.,
+vol.14, 489-498.
+
+
+Please report errors or difficulties to:
+      Alan Miller
+      CSIRO Division of Mathematics & Statistics
+      Private Mail Bag 10
+      Rosebank MDC
+      Clayton, Victoria 3169
+      Australia
+
+Telephone: +61 3 542-2266     Fax: +61 3 542-2474
+e-mail   : alan @ mel.dms.CSIRO.AU
+

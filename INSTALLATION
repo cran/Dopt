@@ -1,0 +1,84 @@
+REQUIREMENTS:
+
+To install this function you will need
+
+1. The dynamic loading facility, either dyn.load() or dyn.load2()
+
+2. Access to a Fortran compiler that generates dynamically
+   loadable binaries for your version of S-PLUS
+
+3. Something at least functinally equivalent to the UNIX Bourne
+   shell, sh, to decouple the shell archive file (but if you are
+   reading this, I suppose you have got that far!)
+
+-----------------------------------------------------------------
+
+INSTALLATION and TESTING:
+
+The recommended (UNIX) proceedure is as follows:
+
+A. Make a new, empty directory, move the shell archive file to it
+   and expand it there.  For example
+
+   $ mkdir dopt
+   $ mv Dopt.shar dopt
+   $ cd dopt
+   $ sh Dopt.shar
+
+B. If your S-PLUS command is `Splus' and your system uses
+   `dyn.load()', fine, otherwise you will need to adjust the two
+   lines at the top of the shell script INS where these are
+   defined.
+
+   The test shell script TEST also needs to have the S-PLUS
+   command corrected.
+
+C. To install the Dopt library as a subdirectory of the current
+   directory: 
+
+   $ ./INS
+
+D. If everything goes fine you should test the library with
+
+   $ ./TEST
+
+   This will generate an output file `test.out' that should
+   only differ with the comparison file `master.out' in the
+   banner at the top.
+
+   There can be major differences in the files, though, and the
+   function still be correct, simply because of differences in
+   floating point arithmetic on your machine and on mine.
+
+E. If everything seems OK, move the Dopt subdirectory of your
+   temporary working directory (and all its contents, of course)
+   to $SHOME/library, or to some convenient place where users may
+   have access to it.
+
+-----------------------------------------------------------------
+
+PROBLEMS and POTENTIAL Problems:
+
+1. I have only tested this on Sun SPARC IPCs using SunOS 4.1.1
+   and 4.1.3, and with S-PLUS Rel. 3.1 and 3.2.
+
+2. It is easy to underestimate the size of the computational
+   problem for many designs.  The last part of the test procedure
+   is deliberately a fairly large problem, but much larger ones
+   occur regularly in practice.  This can generate huge storage
+   and virtual memory requirements and may cause some irritation
+   if you work on a shared memory system.
+
+3. The routine purports to use its own internal random number
+   generator and should therefore have its results reproducible
+   if the seed is reset beforehand.  This appears not to be so;
+   for some odd reason to make the results reproducible you need
+   both to set the RNG local to Dopt and the .Random.seed vector
+   for the S-PLUS RNG.  I do not know if this is a bug in my
+   front end or some problem with the Fortran, but so far it has
+   caused no problems in getting good designs.
+
+_________________________________________________________________
+Bill Venables, Department of Statistics,      Tel: +61 8 303 3026
+The University of Adelaide,                   Fax: +61 8 232 5670
+South AUSTRALIA.     5005.   Email: Bill.Venables@adelaide.edu.au
